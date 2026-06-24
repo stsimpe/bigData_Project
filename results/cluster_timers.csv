@@ -1,0 +1,31 @@
+source,timer_label,seconds
+csv-to-parquet-py-fe7c7f9e83ce4947-driver,CSV → Parquet conversion,80.368
+csv-to-parquet-py-fe7c7f9e83ce4947-driver,Q1 on CSV,23.529
+csv-to-parquet-py-fe7c7f9e83ce4947-driver,Q1 on Parquet,7.303
+q1-dataframe-py-0623049e83abef91-driver,Q1 DataFrame (no UDF),24.336
+q1-dataframe-py-38aa729e8315c730-driver,Q1 DataFrame (no UDF),28.556
+q1-dataframe-udf-py-fb709b9e83acdd4e-driver,Q1 DataFrame (with UDF),61.072
+q1-rdd-py-bf637c9e83ae59b9-driver,Q1 RDD,62.257
+q2-dataframe-py-7932949efbf95661-driver,Q2 DataFrame,31.835
+q2-dataframe-py-a780479e83afa7b9-driver,Q2 DataFrame,42.602
+q2-dataframe-py-fa9d649efbeaa4cd-driver,Q2 DataFrame,34.064
+q2-sql-py-1d4d799efbed527f-driver,Q2 SQL,51.818
+q2-sql-py-806b389efbfc0c95-driver,Q2 SQL,28.465
+q2-sql-py-d0ddd79e83b0db49-driver,Q2 SQL,51.168
+q3-dataframe-py-30074b9e83b225f5-driver,Q3 DataFrame,22.650
+q3-rdd-py-2cce399e83b31b30-driver,Q3 RDD,26.652
+q3-with-hints-py-62dd2b9e83d072ff-driver,Q3 hint=(default),2.236
+q3-with-hints-py-62dd2b9e83d072ff-driver,Q3 hint=BROADCAST,1.579
+q3-with-hints-py-62dd2b9e83d072ff-driver,Q3 hint=MERGE,2.358
+q3-with-hints-py-62dd2b9e83d072ff-driver,Q3 hint=SHUFFLE_HASH,2.537
+q3-with-hints-py-62dd2b9e83d072ff-driver,Q3 hint=SHUFFLE_REPLICATE_NL,1.848
+q4-dataframe-py-009cd79e83c8ed10-driver,Q4 DataFrame,56.033
+q4-dataframe-py-372fe39e83cb8baa-driver,Q4 DataFrame,36.456
+q4-dataframe-py-8d7cc59e83ca66e3-driver,Q4 DataFrame,38.625
+q4-dataframe-py-e32a409e83c5fcb1-driver,Q4 DataFrame,74.233
+q4-dataframe-py-e5ac839e83ccb558-driver,Q4 DataFrame,59.579
+q4-dataframe-py-e9cf5a9e83c7a656-driver,Q4 DataFrame,44.460
+q4-dataframe-py-f8ddd19e83b3e327-driver,Q4 DataFrame,56.053
+q4-with-hints-py-8998689e83d1b92b-driver,Q4 hint=(default),28.657
+q4-with-hints-py-8998689e83d1b92b-driver,Q4 hint=BROADCAST,25.252
+q4-with-hints-py-8998689e83d1b92b-driver,Q4 hint=SHUFFLE_REPLICATE_NL,28.277
