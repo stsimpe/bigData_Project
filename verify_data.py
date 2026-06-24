@@ -1,15 +1,9 @@
 """Επιβεβαιώνει ότι το sample dataset διαβάζεται σωστά από το PySpark.
-
-Run: άνοιξε αυτό το αρχείο στο VS Code και πάτα F5.
-
 Τι κάνει:
   1. Φορτώνει τα paths από το `src.common.paths` (mode = local).
   2. Δημιουργεί SparkSession.
   3. Διαβάζει το CSV του 2010-2019 ως DataFrame.
   4. Τυπώνει schema, μέγεθος, και τις πρώτες γραμμές.
-
-Αν δεις schema με στήλες όπως `DR_NO`, `DATE OCC`, `TIME OCC`, `AREA NAME`,
-`Premis Desc` κλπ. — το pipeline είναι έτοιμο για Query 1.
 """
 from __future__ import annotations
 
