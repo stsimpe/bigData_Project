@@ -60,46 +60,83 @@ python -m src.q4_nearest_station.q4_dataframe
 ## Μέρος Β — Εκτέλεση στο cluster (παραδοτέο)
 
 Εδώ παράγονται οι χρόνοι της αναφοράς και το ίχνος εκτέλεσης στο Kubernetes.
+Όλα γίνονται από **WSL** με ενεργό **OpenVPN**.
 
 ### 1. Προαπαιτούμενα σύνδεσης (μία φορά)
-1. **WSL Ubuntu** (preparatory οδηγός του μαθήματος).
-2. **OpenVPN** προς το cslab με το `.ovpn` που σου δόθηκε.
-3. **kubectl** + το `kubeconfig` στο `~/.kube/config`.
-4. **Spark 3.5.x + Hadoop 3 client** στο WSL, με `core-site.xml` και
-   `spark-defaults.conf` ρυθμισμένα κατά τους οδηγούς `ikons/bigdata-dsml`
+1. **WSL Ubuntu** + **OpenVPN** προς το cslab (το `.ovpn` που σου δόθηκε).
+2. **kubectl** + το `kubeconfig` στο `~/.kube/config`. Έλεγχος:
+   `kubectl get pods -n dsml00318-priv`
+3. **Spark 3.5.x + Hadoop 3 client** στο WSL, με `core-site.xml` /
+   `spark-defaults.conf` κατά τον οδηγό `ikons/bigdata-dsml`
    (`04_remote-spark-kubernetes`).
-5. Πρόσβαση HDFS μέσω `HADOOP_USER_NAME` (το username σου, π.χ. `dsml00318`).
 
-Τα δεδομένα είναι ήδη στο HDFS:
-`hdfs://hdfs-namenode.default.svc.cluster.local:9000/data/` — δεν ανεβάζεις
-τίποτα.
+### 2. Πρόσβαση στο HDFS από το client (ΚΡΙΣΙΜΟ)
+Το hostname `hdfs-namenode` είναι **εσωτερικό του Kubernetes**: τα driver pods
+το αναλύουν, αλλά το WSL client σου όχι — και το `hdfs dfs` σκάει με
+`UnknownHostException: hdfs-namenode`. Το VPN δρομολογεί το δίκτυο `10.233.x`
+του cluster, οπότε αρκεί μια εγγραφή στο `/etc/hosts`:
 
-### 2. Τρέξε όλα τα queries με τα σωστά executor configs
-Από WSL, μέσα στον φάκελο του project:
 ```bash
-# Q1 (2 exec ×1c×2g), Q2 (4×1×2g), Q3 (3×1×2g), Q4 (default) — με timings σε CSV
-bash scripts/cluster_run_all.sh
-
-# Scalability Q4 (6 configs) + CSV→Parquet + join hints (Ζητούμενο 6)
-bash scripts/cluster_experiments.sh
-
-# Συγκέντρωση των [TIMER] χρόνων από τα pods / logs
-bash scripts/collect_timers.sh results/cluster_timers.csv
+sudo bash -c 'echo "10.233.49.220  hdfs-namenode" >> /etc/hosts'
 ```
-Τα scripts περνούν `--conf spark.kubernetes.driverEnv.DATA_MODE=hdfs` ώστε ο
-driver να διαβάζει από το HDFS, σώζουν τα timings στο `results/*.csv` και το
-raw output κάθε run στο `results/logs/` (ως ανιχνεύσιμο ίχνος).
+> Το `10.233.49.220` ήταν το ClusterIP του `hdfs-namenode` στη δική μας
+> εκτέλεση. Αν στο δικό σου cluster είναι άλλο, πάρ' το από τον οδηγό 04 του
+> εργαστηρίου (ή από το service `hdfs-namenode`).
 
-### 3. Μεμονωμένο query (αν θες χειροκίνητα)
+Έλεγχος ότι δουλεύει (πρέπει να λιστάρει τα datasets):
 ```bash
-export DATA_MODE=hdfs
-export HADOOP_USER_NAME=<το username σου>
-zip -qr src.zip src/
+export HADOOP_USER_NAME=dsml00318
+hdfs dfs -ls hdfs://hdfs-namenode:9000/data/
+```
+
+### 3. Ανέβασε τον κώδικα στο HDFS
+Τα **δεδομένα** είναι ήδη στο HDFS (`/data/`). Τον **κώδικά σου** όμως πρέπει να
+τον ανεβάσεις, για να τον διαβάσουν τα driver pods. (Το flag
+`dfs.client.use.datanode.hostname=false` είναι το default· το βάζουμε ρητά ως
+ασφάλεια ώστε το write να μη μπλέκει με ονόματα datanode.)
+
+```bash
+cd /mnt/c/Users/<user>/bigdata_project
+export HADOOP_USER_NAME=dsml00318
+HC=hdfs://hdfs-namenode:9000/user/dsml00318/code
+
+zip -qr /tmp/src.zip src/
+hdfs dfs -D dfs.client.use.datanode.hostname=false -put -f /tmp/src.zip "$HC/src.zip"
+for f in src/q1_day_parts/q1_dataframe.py src/q1_day_parts/q1_dataframe_udf.py \
+         src/q1_day_parts/q1_rdd.py src/q2_top_months/q2_dataframe.py \
+         src/q2_top_months/q2_sql.py src/q3_income/q3_dataframe.py \
+         src/q3_income/q3_rdd.py src/q3_income/q3_with_hints.py \
+         src/q4_nearest_station/q4_dataframe.py src/q4_nearest_station/q4_with_hints.py \
+         src/conversion/csv_to_parquet.py ; do
+  hdfs dfs -D dfs.client.use.datanode.hostname=false -put -f "$f" "$HC/$(basename "$f")"
+done
+```
+
+### 4. Τρέξε ένα query
+Ο driver τρέχει **μέσα** στο cluster και διαβάζει τον κώδικα από το HDFS. Το
+`DATA_MODE=hdfs` και το `HADOOP_USER_NAME` περνάνε στον driver με `--conf`:
+
+```bash
 spark-submit \
   --conf spark.kubernetes.driverEnv.DATA_MODE=hdfs \
-  --num-executors 2 --executor-cores 1 --executor-memory 2g \
-  --py-files src.zip \
-  src/q1_day_parts/q1_dataframe.py
+  --conf spark.kubernetes.driverEnv.HADOOP_USER_NAME=dsml00318 \
+  --num-executors 4 --executor-cores 1 --executor-memory 2g \
+  --py-files hdfs://hdfs-namenode:9000/user/dsml00318/code/src.zip \
+  hdfs://hdfs-namenode:9000/user/dsml00318/code/q2_dataframe.py
+```
+Δες το αποτέλεσμα από το driver pod:
+```bash
+kubectl get pods -n dsml00318-priv | grep q2
+kubectl logs -n dsml00318-priv <driver-pod> | tail -30
+```
+
+### 5. Όλα μαζί + συλλογή χρόνων
+Τα scripts κάνουν μόνα τους zip+upload+submit (με τα σωστά executor configs)
+και μαζεύουν τους χρόνους. Απαιτούν να έχει γίνει το βήμα 2 (`/etc/hosts`):
+```bash
+bash scripts/cluster_run_all.sh        # Q1-Q4
+bash scripts/cluster_experiments.sh    # scalability + parquet + hints
+bash scripts/collect_timers.sh results/cluster_timers.csv   # [TIMER] -> CSV
 ```
 
 ### Executor configs ανά ζητούμενο
