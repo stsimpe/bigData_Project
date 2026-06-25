@@ -7,11 +7,7 @@ q1-dataframe-py-38aa729e8315c730-driver,Q1 DataFrame (no UDF),28.556
 q1-dataframe-udf-py-fb709b9e83acdd4e-driver,Q1 DataFrame (with UDF),61.072
 q1-rdd-py-bf637c9e83ae59b9-driver,Q1 RDD,62.257
 q2-dataframe-py-7932949efbf95661-driver,Q2 DataFrame,31.835
-q2-dataframe-py-a780479e83afa7b9-driver,Q2 DataFrame,42.602
-q2-dataframe-py-fa9d649efbeaa4cd-driver,Q2 DataFrame,34.064
-q2-sql-py-1d4d799efbed527f-driver,Q2 SQL,51.818
 q2-sql-py-806b389efbfc0c95-driver,Q2 SQL,28.465
-q2-sql-py-d0ddd79e83b0db49-driver,Q2 SQL,51.168
 q3-dataframe-py-30074b9e83b225f5-driver,Q3 DataFrame,22.650
 q3-rdd-py-2cce399e83b31b30-driver,Q3 RDD,26.652
 q3-with-hints-py-62dd2b9e83d072ff-driver,Q3 hint=(default),2.236

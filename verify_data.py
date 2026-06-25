@@ -1,9 +1,8 @@
 """Επιβεβαιώνει ότι το sample dataset διαβάζεται σωστά από το PySpark.
-Τι κάνει:
-  1. Φορτώνει τα paths από το `src.common.paths` (mode = local).
-  2. Δημιουργεί SparkSession.
-  3. Διαβάζει το CSV του 2010-2019 ως DataFrame.
-  4. Τυπώνει schema, μέγεθος, και τις πρώτες γραμμές.
+
+Τι κάνει: φορτώνει τα paths (mode=local), φτιάχνει SparkSession, διαβάζει το
+CSV 2010-2019 ως DataFrame και τυπώνει schema, πλήθος και τις πρώτες γραμμές.
+Αν δεις στήλες όπως DR_NO, DATE OCC, TIME OCC, Premis Desc -- όλα ΟΚ.
 """
 from __future__ import annotations
 
@@ -15,7 +14,6 @@ from src.common.timing import timed
 def main() -> None:
     print(f"[config] {describe()}")
     print(f"[config] CRIME_2010_2019_CSV = {CRIME_2010_2019_CSV}")
-    print()
 
     spark = build_session("verify-data")
 
@@ -27,8 +25,7 @@ def main() -> None:
     print(f"Columns ({len(df.columns)}):")
     for c in df.columns:
         print(f"  - {c!r}")
-    print()
-    print("First 5 rows (truncated):")
+    print("\nFirst 5 rows:")
     df.show(5, truncate=40)
 
     spark.stop()
